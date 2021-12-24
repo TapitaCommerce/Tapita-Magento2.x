@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Tapita_Tpbuilder::mainNav" title="Tapita Frontend" module="Tapita_Tpbuilder" sortOrder="51" resource="Tapita_Tpbuilder::mainNav"/>
+        <add id="Tapita_Tpbuilder::tpbuildersettings" title="General Settings" module="Tapita_Tpbuilder" sortOrder="9990" resource="Tapita_Tpbuilder::configuration" action="adminhtml/system_config/edit/section/tpbuilder" parent="Tapita_Tpbuilder::mainNav"/>
+    </menu>
+</config>

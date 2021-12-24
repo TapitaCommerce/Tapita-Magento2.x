@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Event/etc/events.xsd">
+    <event name="admin_system_config_changed_section_tpbuilder">
+        <observer name="tpbuilder_config_save" instance="Tapita\Tpbuilder\Observer\FetchPages"/>
+    </event>
+    <event name="cms_page_save_before">
+        <observer name="tpbuilder_cms_save" instance="Tapita\Tpbuilder\Observer\CMSPageSaveBefore"/>
+    </event>
+</config>
