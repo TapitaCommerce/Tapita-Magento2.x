@@ -38,16 +38,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $jsLibPath = $jsLibPath->getUrl();
             $pbData = file_get_contents('https://tapita.io/pb/publishedpb/?integrationToken=' . $token);
             $pbDataObj = json_decode($pbData, true);
+            //Max update
+            $objectManager =  \Magento\Framework\App\ObjectManager::getInstance();    
+            $storeManager = $objectManager->create("\Magento\Store\Model\StoreManagerInterface");
+            //end update
             if ($pbDataObj && isset($pbDataObj['data']['spb_page']['items'])) {
                 $createdPages = 0;
                 $updatedPages = 0;
                 $cmspages = $this->cmsPageFactory->create()->getCollection()->addFieldToFilter('is_active', 1)->toArray();
                 foreach ($pbDataObj['data']['spb_page']['items'] as $pbItem) {
                     $urlPath = $pbItem['url_path'];
-                    $matched = false;
-                    $cmsPageToCreate = $this->cmsPageFactory->create();
+                    $matched = false;                                                                                                                        
+                    $cmsPageToCreate = $this->cmsPageFactory->create();                    
                     if ($urlPath && $urlPath !== '') {
-                        $urlPath = ltrim($urlPath, $urlPath[0]);
+                        $urlPath = ltrim($urlPath, $urlPath[0]);                        
                         foreach ($cmspages['items'] as $cmspage) {
                             if (
                                 $cmspage['identifier'] === $urlPath
@@ -55,21 +59,40 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                 $matched = $cmspage;
                             } else if ($cmspage['identifier'] === 'home' && $urlPath === '') {
                                 $urlPath = 'home';
+                                $matched = $cmspage;
                             }
-                        }
-                        if ($matched && $matched['page_id']) {
-                            if ((int)$matched['is_tapita'] !== 1) {
-                                $cmsPageToDisable = $this->cmsPageFactory->create()->load($matched['page_id']);
-                                $cmsPageToDisable->setData('identifier', $cmsPageToDisable->getData('identifier') . '_old')
-                                    ->setStatus('is_active', 0)->save();
-                                $createdPages++;
-                            } else {
+                        }                                            
+                        if ($matched && $matched['page_id']) {                                                                                
+                            //always over-ride Magento page. 
+                            if($this->scopeConfig->getValue('tpbuilder/general/override') == '1'){
                                 $updatedPages++;
                                 $cmsPageToCreate->load($matched['page_id']);
-                            }
+                            }else{
+                                continue;
+                            }                            
                         } else {
                             $createdPages++;
+                        }                        
+                        
+                        $storeview_visibility = $pbItem['storeview_visibility'];
+                        $storeview_visibility = explode(',', $storeview_visibility);       
+                        $storeViews = [];             
+                        foreach ($storeview_visibility as $storeview) {                        
+                            $storecode = $storeview; //storecode here                        
+                            if($storecode == ""){
+                                $storeViews[] = 0;
+                            }else{
+                                $stores = $storeManager->getStores(true, true);                            
+                                if(isset($stores[$storecode])){                            
+                                    $store_id = $stores[$storecode]->getId();
+                                    $storeViews[] = $store_id;
+                                }                    
+                            }                                                
                         }
+                        if(count($storeViews) == 0){
+                            $storeViews[] = 0;
+                        }
+
                         $cmsPageToCreate
                             ->setData('identifier', $urlPath)
                             ->setData('title', $pbItem['name'])
@@ -79,9 +102,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                             ->setData('sort_order', $pbItem['priority'])
                             ->setData('page_layout', '1column')
                             ->setData('is_tapita', 1)
-                            ->setData('stores', [0])
+                            ->setData('stores', $storeViews)
                             ->setData('content', '
-                                    <div id="tp_pb_ctn" />
+                                    <div id="tp_pb_ctn"></div>
                                     <script type="text/javascript">
                                         require([
                                             "' . $jsLibPath . '"
