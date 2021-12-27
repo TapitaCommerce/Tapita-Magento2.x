@@ -10,9 +10,13 @@
             <tab>tpbuilder</tab>
             <resource>Tapita_Tpbuilder::tpbuilder_settings</resource>
             <group id="general" translate="label" type="text" sortOrder="99" showInDefault="1">
-                <label>Push Notification and Offline Mode</label>
+                <label>Tapita Builder</label>
                 <field id="enable" translate="label" type="select" sortOrder="99" showInDefault="1">
                     <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>                
+                <field id="override" translate="label" type="select" sortOrder="100" showInDefault="1">
+                    <label>Override your URL</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="integration_token" translate="label" type="text" sortOrder="199" showInDefault="1">
