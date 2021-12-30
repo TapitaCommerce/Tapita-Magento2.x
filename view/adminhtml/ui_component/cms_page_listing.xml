@@ -7,7 +7,7 @@
 -->
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <columns name="cms_page_columns">
-        <column name="is_tapita" ortOrder="5">
+        <column name="is_tapita" sortOrder="5">
             <argument name="data" xsi:type="array">
                 <item name="options" xsi:type="object">Magento\Config\Model\Config\Source\Yesno</item>
                 <item name="config" xsi:type="array">
