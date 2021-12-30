@@ -13,16 +13,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $cmsPageFactory;
     protected $assetRepository;
     protected $random;
+    protected $storeManager;
 
     public function __construct(
         TypeListInterface $cache,
         \Magento\Cms\Model\PageFactory $cmsPageFactory,
         AssetRepository $assetRepository,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig
     ) {
         $this->cache = $cache;
         $this->assetRepository = $assetRepository;
         $this->scopeConfig = $scopeConfig;
+        $this->storeManager = $storeManager;
         $this->cmsPageFactory = $cmsPageFactory;
     }
 
@@ -38,10 +41,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $jsLibPath = $jsLibPath->getUrl();
             $pbData = file_get_contents('https://tapita.io/pb/publishedpb/?integrationToken=' . $token);
             $pbDataObj = json_decode($pbData, true);
-            //Max update
-            $objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
-            $storeManager = $objectManager->create("\Magento\Store\Model\StoreManagerInterface");
-            //end update
+            $storeManager = $this->storeManager;
             if ($pbDataObj && isset($pbDataObj['data']['spb_page']['items'])) {
                 $createdPages = 0;
                 $updatedPages = 0;
