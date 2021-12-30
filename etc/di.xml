@@ -3,4 +3,7 @@
     <type name="Magento\Cms\Model\Wysiwyg\Config">
         <plugin name="tp_wysiwyg_disable_forpb_pages" type="Tapita\Tpbuilder\Plugin\WysiwygConfig" sortOrder="10" disabled="false" />
     </type>
+    <type name="Magento\PageBuilder\Model\Config">
+        <plugin name="tp_magentopb_disable_forpb_pages" type="Tapita\Tpbuilder\Plugin\PageBuilderConfig" sortOrder="10" disabled="false" />
+    </type>
 </config>
