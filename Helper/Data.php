@@ -33,7 +33,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $enable = $this->scopeConfig->getValue('tpbuilder/general/enable');
         $token = $this->scopeConfig->getValue('tpbuilder/general/integration_token');
-        if ($enable == '1' && $token && $_SERVER['HTTP_REFERER'] && strpos($_SERVER['HTTP_REFERER'], 'tpbuilder') !== false) {
+        if ($enable == '1' && $token) {
             $jsLibPath = $this->assetRepository->createAsset(
                 'Tapita_Tpbuilder::js/simi-pagebuilder-react@1.3.8.umd.js',
                 ['area' => 'frontend']

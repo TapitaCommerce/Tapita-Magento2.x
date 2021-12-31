@@ -43,7 +43,7 @@ class FetchPages implements ObserverInterface
     {
         $enable = $this->scopeConfig->getValue('tpbuilder/general/enable');
         $token = $this->scopeConfig->getValue('tpbuilder/general/integration_token');
-        if ($enable == '1' && $token && $_SERVER['HTTP_REFERER'] && strpos($_SERVER['HTTP_REFERER'], 'tpbuilder') !== false) {
+        if ($enable == '1' && $token && isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'tpbuilder') !== false) {
             $hook_token = $this->scopeConfig->getValue('tpbuilder/general/hook_token');
             if (!$hook_token) {
                 $hook_token = $this->random->getRandomString(18);
