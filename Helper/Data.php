@@ -47,7 +47,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 $updatedPages = 0;
                 $cmspages = $this->cmsPageFactory->create()->getCollection()->addFieldToFilter('is_active', 1)->toArray();
                 foreach ($pbDataObj['data']['spb_page']['items'] as $pbItem) {
-                    $urlPath = $pbItem['url_path'];
+                    $urlPath = $pbItem['original_url_path'];
                     $matched = false;
                     $cmsPageToCreate = $this->cmsPageFactory->create();
                     if ($urlPath && $urlPath !== '') {
@@ -96,6 +96,59 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         if (count($storeViews) == 0) {
                             $storeViews[] = 0;
                         }
+                        $cmsContent = '
+                            <div id="tp_pb_ctn"></div>
+                            <script type="text/javascript">
+                                require([
+                                    "' . $jsLibPath . '"
+                                ], function(PageBuilderComponent) {
+                                    var pageDataToRender = ' . json_encode($pbItem) . ';
+                                    PageBuilderComponent.renderForIdWithProps("tp_pb_ctn", {
+                                        endPoint: "https://tapita.io/pb/graphql/",
+                                        maskedId: "' . $pbItem['masked_id'] . '",
+                                        pageData: pageDataToRender,
+                                    })
+                                });
+                            </script>
+                        ';
+                        $publishedItems = json_decode($pbItem['publish_items'], true);
+                        if ($publishedItems && count($publishedItems)) {
+                            foreach ($publishedItems as $publishedItem) {
+                                if (
+                                    $publishedItem['type'] === 'product_scroll' ||
+                                    $publishedItem['type'] === 'product_scroll_1' ||
+                                    $publishedItem['type'] === 'product_grid'
+                                ) {
+                                    $itmData = json_decode($publishedItem['data'], true);
+                                    if ($itmData && (isset($itmData['openCategoryProducts']) || isset($itmData['openProductsWidthSKUs']))) {
+                                        /* openCategoryProducts , openProductsWidthSKUs , openProductsWidthSortPageSize, 
+                                        openProductsWidthSortAtt, openProductsWidthSortDir */
+                                        $productCount = isset($itmData['openProductsWidthSortPageSize']) ? $itmData['openProductsWidthSortPageSize'] : 10;
+                                        $productListAttribute = isset($itmData['openProductsWidthSKUs']) ? 'sku' : 'category_ids';
+                                        $productListValue = isset($itmData['openProductsWidthSKUs']) ? $itmData['openProductsWidthSKUs'] : $itmData['openCategoryProducts'];
+                                        $widgetToAdd = '
+                                        <div style="display: none" id="pbwidget-id-' . $publishedItem['entity_id'] . '">
+                                            {{widget type="Magento\CatalogWidget\Block\Product\ProductsList" show_pager="0" products_count="' . $productCount . '" ' .
+                                                'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
+                                                '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
+                                                '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}
+                                        </div>
+                                        <script type="text/javascript">
+                                            setTimeout(function () {
+                                                var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
+                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                pbEl.style.display = "block";
+                                                pbEl.innerHTML= sourceEl.innerHTML;
+                                            }, 300);
+                                        </script>
+                                        ';
+                                        // var_dump($widgetToAdd);
+                                        // die;
+                                        $cmsContent .= $widgetToAdd;
+                                    }
+                                }
+                            }
+                        }
 
                         $cmsPageToCreate
                             ->setData('identifier', $urlPath)
@@ -107,21 +160,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                             ->setData('page_layout', '1column')
                             ->setData('is_tapita', 1)
                             ->setData('stores', $storeViews)
-                            ->setData('content', '
-                                    <div id="tp_pb_ctn"></div>
-                                    <script type="text/javascript">
-                                        require([
-                                            "' . $jsLibPath . '"
-                                        ], function(PageBuilderComponent) {
-                                            var pageDataToRender = ' . json_encode($pbItem) . ';
-                                            PageBuilderComponent.renderForIdWithProps("tp_pb_ctn", {
-                                                endPoint: "https://tapita.io/pb/graphql/",
-                                                maskedId: "' . $pbItem['masked_id'] . '",
-                                                pageData: pageDataToRender,
-                                            })
-                                        });
-                                    </script>
-                                ')
+                            ->setData('content', $cmsContent)
                             ->save();
                     }
                 }
