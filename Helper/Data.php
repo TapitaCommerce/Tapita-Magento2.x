@@ -13,16 +13,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $cmsPageFactory;
     protected $assetRepository;
     protected $random;
+    protected $storeManager;
 
     public function __construct(
         TypeListInterface $cache,
         \Magento\Cms\Model\PageFactory $cmsPageFactory,
         AssetRepository $assetRepository,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         ScopeConfigInterface $scopeConfig
     ) {
         $this->cache = $cache;
         $this->assetRepository = $assetRepository;
         $this->scopeConfig = $scopeConfig;
+        $this->storeManager = $storeManager;
         $this->cmsPageFactory = $cmsPageFactory;
     }
 
@@ -30,7 +33,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $enable = $this->scopeConfig->getValue('tpbuilder/general/enable');
         $token = $this->scopeConfig->getValue('tpbuilder/general/integration_token');
-        if ($enable == '1' && $token && $_SERVER['HTTP_REFERER'] && strpos($_SERVER['HTTP_REFERER'], 'tpbuilder') !== false) {
+        if ($enable == '1' && $token) {
             $jsLibPath = $this->assetRepository->createAsset(
                 'Tapita_Tpbuilder::js/simi-pagebuilder-react@1.3.8.umd.js',
                 ['area' => 'frontend']
@@ -38,20 +41,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $jsLibPath = $jsLibPath->getUrl();
             $pbData = file_get_contents('https://tapita.io/pb/publishedpb/?integrationToken=' . $token);
             $pbDataObj = json_decode($pbData, true);
-            //Max update
-            $objectManager =  \Magento\Framework\App\ObjectManager::getInstance();    
-            $storeManager = $objectManager->create("\Magento\Store\Model\StoreManagerInterface");
-            //end update
+            $storeManager = $this->storeManager;
             if ($pbDataObj && isset($pbDataObj['data']['spb_page']['items'])) {
                 $createdPages = 0;
                 $updatedPages = 0;
                 $cmspages = $this->cmsPageFactory->create()->getCollection()->addFieldToFilter('is_active', 1)->toArray();
                 foreach ($pbDataObj['data']['spb_page']['items'] as $pbItem) {
                     $urlPath = $pbItem['url_path'];
-                    $matched = false;                                                                                                                        
-                    $cmsPageToCreate = $this->cmsPageFactory->create();                    
+                    $matched = false;
+                    $cmsPageToCreate = $this->cmsPageFactory->create();
                     if ($urlPath && $urlPath !== '') {
-                        $urlPath = ltrim($urlPath, $urlPath[0]);                        
+                        $urlPath = ltrim($urlPath, $urlPath[0]);
                         foreach ($cmspages['items'] as $cmspage) {
                             if (
                                 $cmspage['identifier'] === $urlPath
@@ -61,35 +61,39 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                 $urlPath = 'home';
                                 $matched = $cmspage;
                             }
-                        }                                            
-                        if ($matched && $matched['page_id']) {                                                                                
-                            //always over-ride Magento page. 
-                            if($this->scopeConfig->getValue('tpbuilder/general/override') == '1'){
+                        }
+                        if ($matched && $matched['page_id']) {
+                            if ((int)$matched['is_tapita'] !== 1) {
+                                if ($this->scopeConfig->getValue('tpbuilder/general/override') == '1') {
+                                    $updatedPages++;
+                                    $cmsPageToCreate->load($matched['page_id']);
+                                } else {
+                                    continue;
+                                }
+                            } else {
                                 $updatedPages++;
                                 $cmsPageToCreate->load($matched['page_id']);
-                            }else{
-                                continue;
-                            }                            
+                            }
                         } else {
                             $createdPages++;
-                        }                        
-                        
+                        }
+
                         $storeview_visibility = $pbItem['storeview_visibility'];
-                        $storeview_visibility = explode(',', $storeview_visibility);       
-                        $storeViews = [];             
-                        foreach ($storeview_visibility as $storeview) {                        
+                        $storeview_visibility = explode(',', $storeview_visibility);
+                        $storeViews = [];
+                        foreach ($storeview_visibility as $storeview) {
                             $storecode = $storeview; //storecode here                        
-                            if($storecode == ""){
+                            if ($storecode == "") {
                                 $storeViews[] = 0;
-                            }else{
-                                $stores = $storeManager->getStores(true, true);                            
-                                if(isset($stores[$storecode])){                            
+                            } else {
+                                $stores = $storeManager->getStores(true, true);
+                                if (isset($stores[$storecode])) {
                                     $store_id = $stores[$storecode]->getId();
                                     $storeViews[] = $store_id;
-                                }                    
-                            }                                                
+                                }
+                            }
                         }
-                        if(count($storeViews) == 0){
+                        if (count($storeViews) == 0) {
                             $storeViews[] = 0;
                         }
 
