@@ -31,7 +31,9 @@ class SyncButton extends Field
         $hookToken = $this->_scopeConfig->getValue('tpbuilder/general/hook_token');
         if ($hookToken) {
             $syncUrl =  $this->urlHelper->getUrl('tpbuilder/hook/index', ['hook_token' => $hookToken, '_nosid' => true]);
-            $actionHtml = '<a href=' . $syncUrl . '>' . $syncUrl . '</a>';
+            $actionHtml = '<button type="button" role="button" class="action-default scalable save primary"' .
+                'onClick="document.getElementById(\'config-edit-form\').submit()" >Sync</button><br/>' .
+                '<div style="margin-top: 15px;">Hook URL: <span style="color: #ff6300">' . $syncUrl . '  </span></div>';
         }
         return $actionHtml;
     }

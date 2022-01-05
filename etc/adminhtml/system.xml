@@ -14,7 +14,7 @@
                 <field id="enable" translate="label" type="select" sortOrder="99" showInDefault="1">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>                
+                </field>
                 <field id="override" translate="label" type="select" sortOrder="100" showInDefault="1">
                     <label>Override your URL</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -31,11 +31,26 @@
                     <depends>
                         <field id="*/*/enable">1</field>
                     </depends>
-                    <comment>Token is used to sync by url below. Use it to sync with tapita whenever you want.</comment>
+                    <comment>Token is used by hook url below. Use it to sync with tapita whenever you want.</comment>
                 </field>
                 <field id="sync_action" translate="label" sortOrder="699" showInDefault="1">
                     <label>Sync</label>
                     <frontend_model>Tapita\Tpbuilder\Block\System\Config\SyncButton</frontend_model>
+                </field>
+            </group>
+            <group id="footer_block" translate="label" type="text" sortOrder="99" showInDefault="1" showInStore="1">
+                <label>Footer Block</label>
+                <field id="enable" translate="label" type="select" sortOrder="99" showInDefault="1" showInStore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable Footer Block would use the block configured below instead of original footer items.</comment>
+                </field>
+                <field id="block" translate="label" type="select" sortOrder="199" showInDefault="1" showInStore="1">
+                    <label>Select Block</label>
+                    <depends>
+                        <field id="*/*/enable">1</field>
+                    </depends>
+                    <source_model>Magento\Cms\Model\Config\Source\Block</source_model>
                 </field>
             </group>
         </section>
