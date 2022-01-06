@@ -53,11 +53,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                     if ($urlPath && $urlPath !== '') {
                         $urlPath = ltrim($urlPath, $urlPath[0]);
                         foreach ($cmspages['items'] as $cmspage) {
-                            if (
-                                $cmspage['identifier'] === $urlPath
+                            if ($cmspage['identifier'] === $urlPath
                             ) {
                                 $matched = $cmspage;
-                            } else if ($cmspage['identifier'] === 'home' && $urlPath === '') {
+                            } elseif ($cmspage['identifier'] === 'home' && $urlPath === '') {
                                 $urlPath = 'home';
                                 $matched = $cmspage;
                             }
@@ -82,7 +81,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         $storeview_visibility = explode(',', $storeview_visibility);
                         $storeViews = [];
                         foreach ($storeview_visibility as $storeview) {
-                            $storecode = $storeview; //storecode here                        
+                            $storecode = $storeview; //storecode here
                             if ($storecode == "") {
                                 $storeViews[] = 0;
                             } else {
@@ -114,14 +113,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         $publishedItems = json_decode($pbItem['publish_items'], true);
                         if ($publishedItems && count($publishedItems)) {
                             foreach ($publishedItems as $publishedItem) {
-                                if (
-                                    $publishedItem['type'] === 'product_scroll' ||
+                                if ($publishedItem['type'] === 'product_scroll' ||
                                     $publishedItem['type'] === 'product_scroll_1' ||
                                     $publishedItem['type'] === 'product_grid'
                                 ) {
                                     $itmData = json_decode($publishedItem['data'], true);
                                     if ($itmData && (isset($itmData['openCategoryProducts']) || isset($itmData['openProductsWidthSKUs']))) {
-                                        /* openCategoryProducts , openProductsWidthSKUs , openProductsWidthSortPageSize, 
+                                        /* openCategoryProducts , openProductsWidthSKUs , openProductsWidthSortPageSize,
                                         openProductsWidthSortAtt, openProductsWidthSortDir */
                                         $productCount = isset($itmData['openProductsWidthSortPageSize']) ? $itmData['openProductsWidthSortPageSize'] : 10;
                                         $productListAttribute = isset($itmData['openProductsWidthSKUs']) ? 'sku' : 'category_ids';

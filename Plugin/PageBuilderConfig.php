@@ -21,8 +21,9 @@ class PageBuilderConfig
     public function afterIsEnabled($subject, $result)
     {
         $cmsPage = $this->_coreRegistry->registry('cms_page');
-        if ($cmsPage && $cmsPage->getId() && ((int)$cmsPage->getData('is_tapita') === 1))
+        if ($cmsPage && $cmsPage->getId() && ((int)$cmsPage->getData('is_tapita') === 1)) {
             return false;
+        }
         return $result;
     }
 }
