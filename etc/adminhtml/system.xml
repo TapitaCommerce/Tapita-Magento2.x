@@ -34,7 +34,7 @@
                     <comment>Token is used by hook url below. Use it to sync with tapita whenever you want.</comment>
                 </field>
                 <field id="sync_action" translate="label" sortOrder="699" showInDefault="1">
-                    <label>Sync</label>
+                    <label>Sync and Hook</label>
                     <frontend_model>Tapita\Tpbuilder\Block\System\Config\SyncButton</frontend_model>
                 </field>
             </group>
