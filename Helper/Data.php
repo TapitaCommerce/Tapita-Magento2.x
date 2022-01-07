@@ -141,10 +141,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                                 pbEl.innerHTML= sourceEl.innerHTML;
                                             }
                                             setTimeout(function () {
-                                                applyContent' . $publishedItem['entity_id'] . '();
                                                 window.addEventListener("resize", function(event) {
                                                     applyContent' . $publishedItem['entity_id'] . '();
                                                 }, true);
+
+                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                if (pbEl)
+                                                    applyContent' . $publishedItem['entity_id'] . '();
+                                                else
+                                                    setTimeout(function () {
+                                                        applyContent' . $publishedItem['entity_id'] . '();
+                                                    }, 2000);
                                             }, 300);
                                         </script>
                                         ';
