@@ -53,7 +53,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                     if ($urlPath && $urlPath !== '') {
                         $urlPath = ltrim($urlPath, $urlPath[0]);
                         foreach ($cmspages['items'] as $cmspage) {
-                            if ($cmspage['identifier'] === $urlPath
+                            if (
+                                $cmspage['identifier'] === $urlPath
                             ) {
                                 $matched = $cmspage;
                             } elseif ($cmspage['identifier'] === 'home' && $urlPath === '') {
@@ -113,7 +114,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         $publishedItems = json_decode($pbItem['publish_items'], true);
                         if ($publishedItems && count($publishedItems)) {
                             foreach ($publishedItems as $publishedItem) {
-                                if ($publishedItem['type'] === 'product_scroll' ||
+                                if (
+                                    $publishedItem['type'] === 'product_scroll' ||
                                     $publishedItem['type'] === 'product_scroll_1' ||
                                     $publishedItem['type'] === 'product_grid'
                                 ) {
@@ -127,21 +129,25 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                         $widgetToAdd = '
                                         <div style="display: none" id="pbwidget-id-' . $publishedItem['entity_id'] . '">
                                             {{widget type="Magento\CatalogWidget\Block\Product\ProductsList" show_pager="0" products_count="' . $productCount . '" ' .
-                                                'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
-                                                '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                                '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}
+                                            'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
+                                            '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
+                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}
                                         </div>
                                         <script type="text/javascript">
-                                            setTimeout(function () {
+                                            function applyContent' . $publishedItem['entity_id'] . '() {
                                                 var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
                                                 var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
                                                 pbEl.style.display = "block";
                                                 pbEl.innerHTML= sourceEl.innerHTML;
+                                            }
+                                            setTimeout(function () {
+                                                applyContent' . $publishedItem['entity_id'] . '();
+                                                window.addEventListener("resize", function(event) {
+                                                    applyContent' . $publishedItem['entity_id'] . '();
+                                                }, true);
                                             }, 300);
                                         </script>
                                         ';
-                                        // var_dump($widgetToAdd);
-                                        // die;
                                         $cmsContent .= $widgetToAdd;
                                     }
                                 }
