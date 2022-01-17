@@ -14,17 +14,28 @@
                 <field id="enable" translate="label" type="select" sortOrder="99" showInDefault="1">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[<a href="https://support.simicart.com/portal/en/kb/articles/tapita-magento-backend-config">Configuration Guide</a>]]></comment>
                 </field>
                 <field id="override" translate="label" type="select" sortOrder="100" showInDefault="1">
                     <label>Override your URL</label>
+                    <depends>
+                        <field id="*/*/enable">1</field>
+                    </depends>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[Existed CMS pages with same url path will be <br/><ul>
+                        <li><b>Yes</b> - Overridden.</li>
+                        <li><b>No</b> - Kept.</li>
+                        </ul>]]>
+                    </comment>
+
                 </field>
                 <field id="integration_token" translate="label" type="text" sortOrder="199" showInDefault="1">
                     <label>Tapita Integration Token</label>
                     <depends>
                         <field id="*/*/enable">1</field>
                     </depends>
-                    <comment>Go to https://tapita.io/pagebuilder/ to create one. Click save to fetch latest Data.</comment>
+                    <comment><![CDATA[Go to <a href="https://tapita.io/pagebuilder/">Tapita</a> to create one. Click save to fetch latest Data.]]></comment>
                 </field>
                 <field id="hook_token" translate="label" type="text" sortOrder="299" showInDefault="1">
                     <label>Tapitak Hook Token</label>
@@ -35,6 +46,9 @@
                 </field>
                 <field id="sync_action" translate="label" sortOrder="699" showInDefault="1">
                     <label>Sync and Hook</label>
+                    <depends>
+                        <field id="*/*/enable">1</field>
+                    </depends>
                     <frontend_model>Tapita\Tpbuilder\Block\System\Config\SyncButton</frontend_model>
                 </field>
             </group>
