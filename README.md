@@ -4,7 +4,7 @@
 
 Simplify your Magento 2 frontend building process with a drag-and-drop page builder
 
-![Tapita Page Builder Interface](https://marketplace.magento.com/media/catalog/product/cache/926759099fca427eef4eabf7e2c04b97/b/8/b8dc_builder.png "Tapita Page Builder Interface")
+![Tapita Page Builder Interface](https://tapita.io/wp-content/uploads/2022/01/block-templates.png "Tapita Page Builder Interface")
 
 Tapita Page Builder is a quick and effortless way to create custom layouts and pages for your Magento storefront. It allows you to build your own pages using a intuitive drag-and-drop page builder.
 
@@ -28,7 +28,7 @@ With 40+ pre-built page templates, you don't need to build your pages from scrat
 
 Get Tapita Page Builder extension for Magento 2 on Magento Marketplace: https://marketplace.magento.com/tapita-module-tapitapb.html
 
-[Installation Guide](https://tapita.io/pb/tapita-pb-install-guide.pdf)
+[Installation Guide](https://tapita.io/docs/frontend-integration/normal-storefronts/magento-2-integration/)
 
 ## Community
 
