@@ -52,6 +52,7 @@
                     <frontend_model>Tapita\Tpbuilder\Block\System\Config\SyncButton</frontend_model>
                 </field>
             </group>
+            <!--
             <group id="footer_block" translate="label" type="text" sortOrder="99" showInDefault="1" showInStore="1">
                 <label>Footer Block</label>
                 <field id="enable" translate="label" type="select" sortOrder="99" showInDefault="1" showInStore="1">
@@ -67,6 +68,7 @@
                     <source_model>Magento\Cms\Model\Config\Source\Block</source_model>
                 </field>
             </group>
+            -->
             <group id="plain_page" translate="label" type="text" sortOrder="199" showInDefault="1" showInStore="1">
                 <label>Default Plain Page</label>
                 <field id="default" translate="label" type="select" sortOrder="199" showInDefault="1" showInStore="1">

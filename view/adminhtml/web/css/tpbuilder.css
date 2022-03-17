@@ -1,0 +1,4 @@
+body .admin__menu #menu-tapita-tpbuilder-mainnav > a::before {
+    overflow: hidden;
+    content: url(../images/tapita_ic.svg);
+}
