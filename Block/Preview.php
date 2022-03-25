@@ -11,6 +11,9 @@ class Preview extends \Magento\Framework\View\Element\Template
     protected $storeManager;
     protected $cmsPageFactory;
     protected $filterProvider;
+    protected $productModel;
+    protected $objManager;
+    protected $registry;
 
 
     public function __construct(
@@ -19,12 +22,18 @@ class Preview extends \Magento\Framework\View\Element\Template
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Cms\Model\Template\FilterProvider $filterProvider,
         PageFactory $cmsPageFactory,
+        \Magento\Catalog\Model\ProductFactory $productModel,
+        \Magento\Framework\Registry $registry,
+        \Magento\Framework\ObjectManagerInterface $objManager,
         array $data = []
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->cmsPageFactory = $cmsPageFactory;
         $this->filterProvider = $filterProvider;
+        $this->productModel = $productModel;
+        $this->registry = $registry;
+        $this->objManager = $objManager;
         parent::__construct($context, $data);
     }
 
@@ -65,15 +74,42 @@ class Preview extends \Magento\Framework\View\Element\Template
                                 $productCount = isset($itmData['openProductsWidthSortPageSize']) ? $itmData['openProductsWidthSortPageSize'] : 10;
                                 $productListAttribute = isset($itmData['openProductsWidthSKUs']) ? 'sku' : 'category_ids';
                                 $productListValue = isset($itmData['openProductsWidthSKUs']) ? $itmData['openProductsWidthSKUs'] : $itmData['openCategoryProducts'];
+                                $mpSliderEnabled = $this->scopeConfig->getValue('productslider/general/enabled');
+                                $listBlockContent = '';
+                                if ($mpSliderEnabled && $publishedItem['type'] === 'product_scroll') {
+                                    $mpSliderBlock = $this->getLayout()->createBlock("Mageplaza\Productslider\Block\Widget\Slider")
+                                        /*
+                                        ->setData('conditions_encoded', '^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
+                                            '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
+                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]')
+                                            */
+                                        ->setProductsCount($productCount);
+                                    if ($productListAttribute === 'sku') {
+                                        $productSKUs = str_replace(" ", "", $productListValue);
+                                        $productSKUs = explode(',', $productListValue);
+                                        $idsFromSku = $this->productModel->create()->getCollection()
+                                            ->addFieldToFilter('sku', ['in' => $productSKUs])
+                                            ->getAllIds();
+                                        $sliderModel = $this->objManager->create('\Mageplaza\Productslider\Model\Slider');
+                                        $sliderModel->setData('product_type', 'custom')
+                                            ->setData('product_ids', implode('&', $idsFromSku));
+                                        $this->registry->register('tp_pslider_product_slide_model', $sliderModel);
+                                        $mpSliderBlock->setData('product_type', 'custom');
+                                    } else {
+                                        $mpSliderBlock->setData('product_type', 'category')
+                                            ->setData('categories_ids', $itmData['openCategoryProducts']);
+                                    }
+                                    $listBlockContent = $mpSliderBlock->toHtml();
+                                } else {
+                                    $listBlockContent = $this->getLayout()->createBlock("Magento\CatalogWidget\Block\Product\ProductsList")
+                                        ->setData('conditions_encoded', '^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
+                                            '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
+                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]')
+                                        ->setProductsCount($productCount)->setTemplate("product/widget/content/grid.phtml")->toHtml();
+                                }
                                 $preloadedWidgets .= '
                                     <div style="display: none" id="pbwidget-id-' . $publishedItem['entity_id'] . '">
-                                        ' .
-                                    $this->getLayout()->createBlock("Magento\CatalogWidget\Block\Product\ProductsList")
-                                    ->setData('conditions_encoded', '^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
-                                        '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                        '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]')
-                                    ->setProductsCount($productCount)->setTemplate("product/widget/content/grid.phtml")->toHtml()
-                                    . '
+                                        ' . $listBlockContent . '
                                     </div>
                                     <script type="text/javascript">
                                         function applyContent' . $publishedItem['entity_id'] . '() {
@@ -102,6 +138,8 @@ class Preview extends \Magento\Framework\View\Element\Template
                     }
                 }
             } catch (\Exception $e) {
+                var_dump($e->__toString());
+                die;
             }
         }
         return $preloadedWidgets;

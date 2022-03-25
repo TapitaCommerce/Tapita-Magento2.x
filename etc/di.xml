@@ -6,4 +6,7 @@
     <type name="Magento\PageBuilder\Model\Config">
         <plugin name="tp_magentopb_disable_forpb_pages" type="Tapita\Tpbuilder\Plugin\PageBuilderConfig" sortOrder="10" disabled="false" />
     </type>
+    <type name="Mageplaza\Productslider\Block\CustomProducts">
+        <plugin name="tp_pslider_getcustom_product_plugin" type="Tapita\Tpbuilder\Plugin\MpsCustomProducts" sortOrder="10" disabled="false" />
+    </type>
 </config>
