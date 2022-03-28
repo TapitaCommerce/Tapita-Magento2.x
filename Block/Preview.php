@@ -65,6 +65,7 @@ class Preview extends \Magento\Framework\View\Element\Template
                 $previewData = file_get_contents($previewDataUrl);
                 $previewData = json_decode($previewData, true);
                 $allowedTypes = ['product_grid', 'product_scroll', 'product_scroll_1'];
+                $mpSliderEnabled = $this->scopeConfig->getValue('productslider/general/enabled') == 1;
                 if (isset($previewData['data']['spb_item']['items'][0])) {
                     $foundItems = $previewData['data']['spb_item']['items'];
                     foreach ($foundItems as $publishedItem) {
@@ -74,15 +75,9 @@ class Preview extends \Magento\Framework\View\Element\Template
                                 $productCount = isset($itmData['openProductsWidthSortPageSize']) ? $itmData['openProductsWidthSortPageSize'] : 10;
                                 $productListAttribute = isset($itmData['openProductsWidthSKUs']) ? 'sku' : 'category_ids';
                                 $productListValue = isset($itmData['openProductsWidthSKUs']) ? $itmData['openProductsWidthSKUs'] : $itmData['openCategoryProducts'];
-                                $mpSliderEnabled = $this->scopeConfig->getValue('productslider/general/enabled');
                                 $listBlockContent = '';
-                                if ($mpSliderEnabled && $publishedItem['type'] === 'product_scroll') {
+                                if ($mpSliderEnabled && ($publishedItem['type'] === 'product_scroll' || $publishedItem['type'] === 'product_scroll_1')) {
                                     $mpSliderBlock = $this->getLayout()->createBlock("Mageplaza\Productslider\Block\Widget\Slider")
-                                        /*
-                                        ->setData('conditions_encoded', '^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
-                                            '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]')
-                                            */
                                         ->setProductsCount($productCount);
                                     if ($productListAttribute === 'sku') {
                                         $productSKUs = str_replace(" ", "", $productListValue);
@@ -112,25 +107,39 @@ class Preview extends \Magento\Framework\View\Element\Template
                                         ' . $listBlockContent . '
                                     </div>
                                     <script type="text/javascript">
-                                        function applyContent' . $publishedItem['entity_id'] . '() {
-                                            var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
-                                            var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
-                                            pbEl.style.display = "block";
-                                            pbEl.innerHTML= sourceEl.innerHTML;
-                                        }
-                                        setTimeout(function () {
-                                            window.addEventListener("resize", function(event) {
-                                                applyContent' . $publishedItem['entity_id'] . '();
-                                            }, true);
+                                    ' . ($mpSliderEnabled ? 'require([\'jquery\', \'mageplaza/core/owl.carousel\'], function ($) {' : '') . '
+                                            function applyContent' . $publishedItem['entity_id'] . '() {
+                                                var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
+                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                pbEl.style.display = "block";
+                                                pbEl.innerHTML= sourceEl.innerHTML;
+                                                try {
+                                                    if (' . ($mpSliderEnabled ? 'true' : 'false') . ') {
+                                                        var dotToHide = document.querySelector("#pbitm-id-' . $publishedItem['entity_id'] . ' .owl-dots");
+                                                        if (dotToHide)
+                                                            dotToHide.style.display = "none";
+                                                        var toApplyOwlCarousel = document.querySelector("#pbitm-id-' . $publishedItem['entity_id'] . ' .owl-carousel");
+                                                        if (toApplyOwlCarousel)
+                                                            $(toApplyOwlCarousel).owlCarousel({loop:true,margin:10,nav:true,dots:false,lazyLoad:true,autoplay:false,autoplayTimeout:5000,autoplayHoverPause:false,});
+                                                    }
+                                                } catch (err) {
+                                                }
+                                            }
 
-                                            var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
-                                            if (pbEl)
-                                                applyContent' . $publishedItem['entity_id'] . '();
-                                            else
-                                                setTimeout(function () {
+                                            setTimeout(function () {
+                                                window.addEventListener("resize", function(event) {
                                                     applyContent' . $publishedItem['entity_id'] . '();
-                                                }, 2000);
-                                        }, 300);
+                                                }, true);
+
+                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                if (pbEl)
+                                                    applyContent' . $publishedItem['entity_id'] . '();
+                                                else
+                                                    setTimeout(function () {
+                                                        applyContent' . $publishedItem['entity_id'] . '();
+                                                    }, 3000);
+                                            }, 300);
+                                        ' . ($mpSliderEnabled ? '});' : '') . '
                                     </script>
                                     ';
                             }

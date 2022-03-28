@@ -14,18 +14,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $assetRepository;
     protected $random;
     protected $storeManager;
+    protected $layout;
+    protected $registry;
+    protected $productModel;
+    protected $objManager;
 
     public function __construct(
         TypeListInterface $cache,
         \Magento\Cms\Model\PageFactory $cmsPageFactory,
         AssetRepository $assetRepository,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Framework\View\LayoutInterface $layout,
+        \Magento\Framework\Registry $registry,
+        \Magento\Catalog\Model\ProductFactory $productModel,
+        \Magento\Framework\ObjectManagerInterface $objManager,
         ScopeConfigInterface $scopeConfig
     ) {
         $this->cache = $cache;
         $this->assetRepository = $assetRepository;
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
+        $this->layout = $layout;
+        $this->registry = $registry;
+        $this->productModel = $productModel;
+        $this->objManager = $objManager;
         $this->cmsPageFactory = $cmsPageFactory;
     }
 
@@ -42,6 +54,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $pbData = file_get_contents('https://tapita.io/pb/publishedpb/?integrationToken=' . $token);
             $pbDataObj = json_decode($pbData, true);
             $storeManager = $this->storeManager;
+            $mpSliderEnabled = $this->scopeConfig->getValue('productslider/general/enabled') == 1;
             if ($pbDataObj && isset($pbDataObj['data']['spb_page']['items'])) {
                 $createdPages = 0;
                 $updatedPages = 0;
@@ -126,33 +139,75 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                         $productCount = isset($itmData['openProductsWidthSortPageSize']) ? $itmData['openProductsWidthSortPageSize'] : 10;
                                         $productListAttribute = isset($itmData['openProductsWidthSKUs']) ? 'sku' : 'category_ids';
                                         $productListValue = isset($itmData['openProductsWidthSKUs']) ? $itmData['openProductsWidthSKUs'] : $itmData['openCategoryProducts'];
+                                        $listBlockContent = '';
+                                        if ($mpSliderEnabled && ($publishedItem['type'] === 'product_scroll' || $publishedItem['type'] === 'product_scroll_1')) {
+                                            $mpSliderBlock = $this->layout->createBlock("Mageplaza\Productslider\Block\Widget\Slider")
+                                                ->setProductsCount($productCount);
+                                            if ($productListAttribute === 'sku') {
+                                                $productSKUs = str_replace(" ", "", $productListValue);
+                                                $productSKUs = explode(',', $productListValue);
+                                                $idsFromSku = $this->productModel->create()->getCollection()
+                                                    ->addFieldToFilter('sku', ['in' => $productSKUs])
+                                                    ->getAllIds();
+                                                $sliderModel = $this->objManager->create('\Mageplaza\Productslider\Model\Slider');
+                                                $sliderModel->setData('product_type', 'custom')
+                                                    ->setData('product_ids', implode('&', $idsFromSku));
+                                                $this->registry->register('tp_pslider_product_slide_model', $sliderModel);
+                                                $mpSliderBlock->setData('product_type', 'custom');
+                                                $listBlockContent = '{{widget type="\Mageplaza\Productslider\Model\Slider" show_pager="0" products_count="' . $productCount . '" ' .
+                                                    'template="Mageplaza_Productslider::widget/productslider.phtml" product_ids="' .  implode('&', $idsFromSku) . '" ' .
+                                                    ' product_type="product_ids"}}';
+                                            } else {
+                                                $mpSliderBlock->setData('product_type', 'category')
+                                                    ->setData('categories_ids', $itmData['openCategoryProducts']);
+                                                $listBlockContent = '{{widget type="Mageplaza\Productslider\Block\Widget\Slider" show_pager="0" products_count="' . $productCount . '" ' .
+                                                    'template="Mageplaza_Productslider::widget/productslider.phtml" categories_ids="' .  $itmData['openCategoryProducts'] . '" ' .
+                                                    ' product_type="category"}}';
+                                            }
+                                        } else {
+                                            $listBlockContent = '{{widget type="Magento\CatalogWidget\Block\Product\ProductsList" show_pager="0" products_count="' . $productCount . '" ' .
+                                                'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
+                                                '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
+                                                '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}';
+                                        }
+
                                         $widgetToAdd = '
                                         <div style="display: none" id="pbwidget-id-' . $publishedItem['entity_id'] . '">
-                                            {{widget type="Magento\CatalogWidget\Block\Product\ProductsList" show_pager="0" products_count="' . $productCount . '" ' .
-                                            'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
-                                            '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}
+                                            ' . $listBlockContent . '
                                         </div>
                                         <script type="text/javascript">
-                                            function applyContent' . $publishedItem['entity_id'] . '() {
-                                                var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
-                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
-                                                pbEl.style.display = "block";
-                                                pbEl.innerHTML= sourceEl.innerHTML;
-                                            }
-                                            setTimeout(function () {
-                                                window.addEventListener("resize", function(event) {
-                                                    applyContent' . $publishedItem['entity_id'] . '();
-                                                }, true);
-
-                                                var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
-                                                if (pbEl)
-                                                    applyContent' . $publishedItem['entity_id'] . '();
-                                                else
-                                                    setTimeout(function () {
+                                            ' . ($mpSliderEnabled ? 'require([\'jquery\', \'mageplaza/core/owl.carousel\'], function ($) {' : '') . '
+                                                function applyContent' . $publishedItem['entity_id'] . '() {
+                                                    var sourceEl = document.getElementById("pbwidget-id-' . $publishedItem['entity_id'] . '");
+                                                    var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                    pbEl.style.display = "block";
+                                                    pbEl.innerHTML= sourceEl.innerHTML;
+                                                    try {
+                                                        if (' . ($mpSliderEnabled ? 'true' : 'false') . ') {
+                                                            var dotToHide = document.querySelector("#pbitm-id-' . $publishedItem['entity_id'] . ' .owl-dots");
+                                                            if (dotToHide)
+                                                                dotToHide.style.display = "none";
+                                                            var toApplyOwlCarousel = document.querySelector("#pbitm-id-' . $publishedItem['entity_id'] . ' .owl-carousel");
+                                                            if (toApplyOwlCarousel)
+                                                                $(toApplyOwlCarousel).owlCarousel({loop:true,margin:10,nav:true,dots:false,lazyLoad:true,autoplay:false,autoplayTimeout:5000,autoplayHoverPause:false,});
+                                                        }
+                                                    } catch (err) {
+                                                    }
+                                                }
+                                                setTimeout(function () {
+                                                    window.addEventListener("resize", function(event) {
                                                         applyContent' . $publishedItem['entity_id'] . '();
-                                                    }, 2000);
-                                            }, 300);
+                                                    }, true);
+
+                                                    var pbEl = document.getElementById("pbitm-id-' . $publishedItem['entity_id'] . '");
+                                                    if (pbEl)
+                                                        applyContent' . $publishedItem['entity_id'] . '();
+                                                    else
+                                                        setTimeout(function () {
+                                                            applyContent' . $publishedItem['entity_id'] . '();
+                                                        }, 3000);
+                                                }, 300);
+                                            ' . ($mpSliderEnabled ? '});' : '') . '
                                         </script>
                                         ';
                                         $cmsContent .= $widgetToAdd;
