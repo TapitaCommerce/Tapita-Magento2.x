@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="tapita_product_slider" class="Tapita\Tpbuilder\Block\Widget\Slider">
+        <label translate="true">Tapita Product Slider</label>
+        <description>Tapita Product Slider</description>
+        <parameters>
+            <parameter name="show_pager" xsi:type="select" visible="false" source_model="Magento\Config\Model\Config\Source\Yesno">
+                <label translate="true">Display Page Control</label>
+            </parameter>
+            <parameter name="products_count" xsi:type="text" required="false" visible="true">
+                <label translate="true">Limit the number of products</label>
+            </parameter>
+            <parameter name="product_type" xsi:type="select" required="true" visible="true">
+                <label translate="true">Slider type - 'category' or 'custom'</label>
+            </parameter>
+            <parameter name="product_ids" xsi:type="select" required="true" visible="true">
+                <label translate="true">Product SKU separated by comma</label>
+            </parameter>
+            <parameter name="categories_ids" xsi:type="select" required="true" visible="true">
+                <label translate="true">Product Categories separated by comma</label>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

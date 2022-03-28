@@ -1,0 +1,124 @@
+<?php
+
+use Magento\Framework\App\Action\Action;
+
+$mode = 'grid';
+$type = 'widget-product-grid';
+$title = $block->getTitle();
+$id = $block->getData('page_var_name') . uniqid('', false);
+$items = $block->getProductCollection();
+if ($items && $items->getSize()) : ?>
+    <div class="tpb-product-slider-block widget block-products-list">
+        <h2 class="tpb-product-slider-title"><?= $block->escapeHtml($block->getTitle()) ?></h2>
+        <p class="tpb-ps-info"><?= $block->escapeHtml($block->getDescription()) ?></p>
+    </div>
+    <div class="block-content tpb-product-slider-content">
+        <div class="products-grid grid">
+            <ol class="product-items widget-viewed-grid">
+                <?php $iterator = 1; ?>
+                <div id="tpb-list-items-<?=
+                                        /** @noEscape */
+                                        $id ?>" class="owl-carousel owl-theme">
+                    <?php foreach ($items as $_item) : ?>
+                        <?= ($iterator++ == 1) ? '<li class="product-item product-slider"">' : '</li><li class="product-item product-slider"">' ?>
+                        <div class="slider-product-item-info">
+                            <a href="<?= $block->escapeUrl($block->getProductUrl($_item)) ?>" class="product photo slider-product-item-photo">
+                                <?= $block->getImage($_item, 'recently_viewed_products_grid_content_widget')->toHtml(); ?>
+                            </a>
+                            <div class="product details slider-product-item-details">
+                                <strong class="product name product-item-name">
+                                    <a title="<?= $block->escapeHtml($_item->getName()) ?>" href="<?= $block->escapeUrl($block->getProductUrl($_item)) ?>">
+                                        <?= $block->escapeHtml($_item->getName()) ?>
+                                    </a>
+                                </strong>
+
+                                <?php if ($block->canShowReview()) : ?>
+                                    <?= $block->getReviewsSummaryHtml($_item, 'short', true) ?>
+                                <?php endif; ?>
+                                <?=
+                                /** @noEscape */
+                                $block->getProductDetailsHtml($_item) ?>
+                                <?php if ($block->canShowPrice()) : ?>
+                                    <?=
+                                    /** @noEscape */
+                                    $block->getProductPriceHtml($_item, $type) ?>
+                                <?php endif; ?>
+
+                                <div class="product actions slider-product-item-actions product-item-actions">
+                                    <?php if ($block->canShowAddToCart()) : ?>
+                                        <div class="actions-primary">
+                                            <?php if ($_item->isSaleable()) : ?>
+                                                <?php $postParams = $block->getAddToCartPostParams($_item); ?>
+                                                <form data-role="tocart-form" data-product-sku="<?= $block->escapeHtml($_item->getSku()) ?>" action="<?= /* @NoEscape */ $postParams['action'] ?>" method="post">
+                                                    <input type="hidden" name="product" value="<?=
+                                                                                                /** @noEscape */
+                                                                                                $postParams['data']['product'] ?>">
+                                                    <input type="hidden" name="<?= /* @escapeNotVerified */ Action::PARAM_NAME_URL_ENCODED ?>" value="<?=
+                                                                                                                                                        /** @noEscape */
+                                                                                                                                                        $postParams['data'][Action::PARAM_NAME_URL_ENCODED] ?>">
+                                                    <?= $block->getBlockHtml('formkey') ?>
+                                                    <button type="submit" title="<?= $block->escapeHtml(__('Add to Cart')) ?>" class="action tocart primary">
+                                                        <span><?=
+                                                                /** @noEscape */
+                                                                __('Add to Cart') ?></span>
+                                                    </button>
+                                                </form>
+                                            <?php else : ?>
+                                                <?php if ($_item->getIsSalable()) : ?>
+                                                    <div class="stock available"><span><?= $block->escapeHtml(__('In stock')) ?></span></div>
+                                                <?php else : ?>
+                                                    <div class="stock unavailable"><span><?= $block->escapeHtml(__('Out of stock')) ?></span></div>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="secondary-addto-links actions-secondary" data-role="add-to-links">
+                                            <?php if ($this->helper('Magento\Wishlist\Helper\Data')->isAllow()) : ?>
+                                                <a href="#" data-post='<?=
+                                                                        /** @noEscape */
+                                                                        $block->getAddToWishlistParams($_item); ?>' class="action towishlist" data-action="add-to-wishlist" title="<?=
+                                                                                                                                                                                                        /** @noEscape */
+                                                                                                                                                                                                        __('Add to Wish List') ?>">
+                                                    <span><?=
+                                                            /** @noEscape */
+                                                            __('Add to Wish List') ?></span>
+                                                </a>
+                                            <?php endif; ?>
+                                            <?php if ($block->getAddToCompareUrl()) : ?>
+                                                <?php $compareHelper = $this->helper('Magento\Catalog\Helper\Product\Compare'); ?>
+                                                <a href="#" class="action tocompare" data-post='<?=
+                                                                                                /** @noEscape */
+                                                                                                $compareHelper->getPostDataParams($_item); ?>' data-role="add-to-links" title="<?=
+                                                                                                                                                                                                    /** @noEscape */
+                                                                                                                                                                                                    __('Add to Compare') ?>">
+                                                    <span><?=
+                                                            /** @noEscape */
+                                                            __('Add to Compare') ?></span>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?= ($iterator === count($items) + 1) ? '</li>' : '' ?>
+                    <?php endforeach ?>
+                </div>
+            </ol>
+        </div>
+        <script type="text/javascript">
+            require([
+                'jquery'
+            ], function($) {
+                var lazyLoad = false;
+                if (lazyLoad === 1) {
+                    $('.slider-product-item-info .photo .product-image-photo').each(function() {
+                        var el = $(this);
+                        el.addClass('owl-lazy');
+                        el.attr('data-src', el.attr('src'));
+                    })
+                }
+            });
+        </script>
+        <?= $block->getPagerHtml() ?>
+    </div>
+<?php endif; ?>
