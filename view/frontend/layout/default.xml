@@ -6,9 +6,11 @@
     </head>
     <body>
         <referenceContainer name="footer">
+            <!--
             <referenceBlock name="form.subscribe" remove="true" ifconfig="tpbuilder/footer_block/enable"/>
             <referenceBlock name="store_switcher" remove="true" ifconfig="tpbuilder/footer_block/enable"/>
             <referenceBlock name="footer_links" remove="true" ifconfig="tpbuilder/footer_block/enable"/>
+            -->
             <!--<referenceBlock name="cms_footer_links_container" remove="true" ifconfig="tpbuilder/footer_block/enable"/>-->
             <!--<block class="Tapita\Tpbuilder\Block\Footer" name="tpbuilder.footer.block" before="-" ifconfig="tpbuilder/footer_block/enable"/>-->
         </referenceContainer>

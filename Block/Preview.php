@@ -135,8 +135,6 @@ class Preview extends \Magento\Framework\View\Element\Template
                     }
                 }
             } catch (\Exception $e) {
-                var_dump($e->__toString());
-                die;
             }
         }
         return $preloadedWidgets;
