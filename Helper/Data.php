@@ -47,7 +47,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $token = $this->scopeConfig->getValue('tpbuilder/general/integration_token');
         if ($enable == '1' && $token) {
             $jsLibPath = $this->assetRepository->createAsset(
-                'Tapita_Tpbuilder::js/simi-pagebuilder-react@1.4.0.umd.js',
+                'Tapita_Tpbuilder::js/simi-pagebuilder-react@1.6.6.umd.js',
                 ['area' => 'frontend']
             );
             $jsLibPath = $jsLibPath->getUrl();
