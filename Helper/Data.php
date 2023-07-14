@@ -47,7 +47,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $token = $this->scopeConfig->getValue('tpbuilder/general/integration_token');
         if ($enable == '1' && $token) {
             $jsLibPath = $this->assetRepository->createAsset(
-                'Tapita_Tpbuilder::js/simi-pagebuilder-react@1.4.0.umd.js',
+                'Tapita_Tpbuilder::js/tapita-pagebuilder-react@1.6.24.umd.js',
                 ['area' => 'frontend']
             );
             $jsLibPath = $jsLibPath->getUrl();
@@ -119,6 +119,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                         endPoint: "https://tapita.io/pb/graphql/",
                                         maskedId: "' . $pbItem['masked_id'] . '",
                                         pageData: pageDataToRender,
+                                        lazyloadPlaceHolder: " ",
                                     })
                                 });
                             </script>
@@ -154,7 +155,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                             $listBlockContent = '{{widget type="Magento\CatalogWidget\Block\Product\ProductsList" show_pager="0" products_count="' . $productCount . '" ' .
                                                 'template="Magento_CatalogWidget::product/widget/content/grid.phtml" conditions_encoded="^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
                                                 '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                                '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]"}}';
+                                                '`attribute`:`' . $productListAttribute . '`,`operator`:`()`,`value`:`' . $productListValue . '`^]^]"}}';
                                         }
 
                                         $widgetToAdd = '

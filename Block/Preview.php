@@ -92,7 +92,7 @@ class Preview extends \Magento\Framework\View\Element\Template
                                     $listBlockContent = $this->getLayout()->createBlock("Magento\CatalogWidget\Block\Product\ProductsList")
                                         ->setData('conditions_encoded', '^[`1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,' .
                                             '`aggregator`:`all`,`value`:`1`,`new_child`:``^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,' .
-                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`==`,`value`:`' . $productListValue . '`^]^]')
+                                            '`attribute`:`' . $productListAttribute . '`,`operator`:`()`,`value`:`' . $productListValue . '`^]^]')
                                         ->setProductsCount($productCount)->setTemplate("product/widget/content/grid.phtml")->toHtml();
                                 }
                                 $preloadedWidgets .= '
